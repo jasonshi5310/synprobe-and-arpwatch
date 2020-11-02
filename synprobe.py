@@ -10,7 +10,9 @@ opened_dict = {}
 
 def scan(target, deport):
     # The following expressions are copyed from scapy reference
+    # https://scapy.readthedocs.io/en/latest/usage.html#syn-scans
     # and the youtube video
+    #https://www.youtube.com/watch?v=4Y-MR-Hec5Y
     global opened_dict
     try:
         response = sr1(IP(dst=target)/TCP(dport=deport,flags='S'), timeout=1.14514, verbose=0)
@@ -70,7 +72,8 @@ def toList(s):
 
 def getFingerPrint(target, deport):
     fingerprint = 'some unique fingerprint'
-    # The following codes are inspired from youtube
+    # The following codes are inspired from youtube video
+    # https://www.youtube.com/watch?v=4Y-MR-Hec5Y
     for i in range(3):
         packet = IP(dst=target)/TCP(dport=deport, flags='S')
         response = sr1(packet, timeout=1.114514)
@@ -86,7 +89,6 @@ def getFingerPrint(target, deport):
 
 
 def main():
-    # print(sys.argv)
     argv = sys.argv
     global opened_dict
     if len(argv) != 2 and len(argv) != 4:
