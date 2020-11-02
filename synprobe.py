@@ -6,14 +6,24 @@ import sys
 import socket
 from multiprocessing import Process
 from itertools import count
+import time
 
 
 def scan(target, deport):
     # The following expressions are copyed from scapy reference
-    ans, unans = sr(IP(dst=target)/TCP(dport=deport,flags='S'))
-    # print(ans[0][1].fields_desc[5].names)
-    # if "SA" in summary:
-    #     print("Yes")
+    # and the youtube video
+    try:
+        response = sr1(IP(dst=target)/TCP(dport=deport,flags='S'), timeout=1.14514, verbose=0)
+        if response.haslayer(TCP) and response.getlayer(TCP).flags==0x12:
+            # the port is open!
+            print('open')
+            pass
+        else:
+            while True:
+                # just loop it!
+                time.sleep(19.19)
+    except AttributeError:
+        time.sleep(19.19)
 
 
 def toList(s):
@@ -35,28 +45,45 @@ def toList(s):
 
 
 def getFingerPrint(target, deport):
-    fingerprint = 'some finger print'
+    fingerprint = 'some unique fingerprint'
     # The following codes are inspired from creating a socket section
-    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.connect((target,deport))
-    msg = 'I hate this h******k so much; but I am not goind to say it :)'.encode()
+    # s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    # try:
+    #     s.connect((target,deport))
+    # except OSError:
+    #     return ''
+    # s.settimeout(1.14514)
+    # msg = 'I hate this h******k so much; but I am not goind to say it :)'.encode()
     for i in range(3):
-        s.sendall(msg)
-        bytes_recd = 0
-        chunks = []
-        to_continue = False
-        while bytes_recd < 1024:
-            chunk = s.recv(min(1024, 1024-bytes_recd))
-            print(0)
-            if chuck == b'':
-                to_continue = True
-                break
-            chunks.append(chunk)
-            bytes_recd += len(chunk)
-        if to_continue == True:
+        packet = IP(dst=target)/TCP(dport=deport, flags='S')
+        response = sr1(packet, timeout=1.14514)
+        if response != None:
+            return response[0:1024]
+        else:
             continue
-        fingerprint = b''.join(chunks)
-        break
+        # s.sendall(msg)
+        # bytes_recd = 0
+        # chunks = []
+        # to_continue = False
+        # while bytes_recd < 1024:
+        #     chunk = b''
+        #     try:
+        #         chunk = s.recv(min(1024, 1024-bytes_recd))
+        #     except socket.timeout:
+        #         chunk = b''
+        #     print(0)
+        #     if chunk == b'':
+        #         to_continue = True
+        #         break
+        #     chunks.append(chunk)
+        #     bytes_recd += len(chunk)
+        # if to_continue == True:
+        #     continue
+        # fingerprint = b''.join(chunks)
+        # break
+    if fingerprint == 'some unique fingerprint':
+        fingerprint = 'Port:{}, 3 requests transmitted, 0 bytes received'
+        fingerprint = fingerprint.format(deport)
     return fingerprint
 
 
@@ -80,7 +107,7 @@ def main():
         pname = 'scan port ' + str(i)
         p = Process(target=scan, name=pname, args=(target,i,))
         p.start()
-        p.join(timeout=3)
+        p.join(timeout=3.16)
         if p.is_alive():
             # print('timeout',i)
             p.terminate()
@@ -97,8 +124,8 @@ def main():
         # s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     print('PORT STATUS FINGERPRINT')
     for i in ports:
-        if opened_dict[i] == 'closed':
-            print(i,'closed', 'N/A')
+        if opened_dict[i] != 'open':
+            print(i,'closed')
         else:
             result = getFingerPrint(target,i)
             print(i, 'open', result)
