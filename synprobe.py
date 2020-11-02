@@ -9,8 +9,12 @@ from itertools import count
 
 
 def scan(target, deport):
+    # The following expressions are copyed from scapy reference
     ans, unans = sr(IP(dst=target)/TCP(dport=deport,flags='S'))
-    print()
+    # print(ans[0][1].fields_desc[5].names)
+    # if "SA" in summary:
+    #     print("Yes")
+
 
 def toList(s):
     if '-' in s:
@@ -30,10 +34,34 @@ def toList(s):
         return [int(s)]
 
 
+def getFingerPrint(target, deport):
+    fingerprint = 'some finger print'
+    # The following codes are inspired from creating a socket section
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s.connect((target,deport))
+    msg = 'I hate this h******k so much; but I am not goind to say it :)'.encode()
+    for i in range(3):
+        s.sendall(msg)
+        bytes_recd = 0
+        chunks = []
+        to_continue = False
+        while bytes_recd < 1024:
+            chunk = s.recv(min(1024, 1024-bytes_recd))
+            print(0)
+            if chuck == b'':
+                to_continue = True
+                break
+            chunks.append(chunk)
+            bytes_recd += len(chunk)
+        if to_continue == True:
+            continue
+        fingerprint = b''.join(chunks)
+        break
+    return fingerprint
 
 
 def main():
-    print(sys.argv)
+    # print(sys.argv)
     argv = sys.argv
     if len(argv) != 2 and len(argv) != 4:
         exit(1)
@@ -54,7 +82,7 @@ def main():
         p.start()
         p.join(timeout=3)
         if p.is_alive():
-            print('timeout',i)
+            # print('timeout',i)
             p.terminate()
             opened_dict.setdefault(i,'closed')
         else:
@@ -67,6 +95,13 @@ def main():
         #     continue
         # Add reference
         # s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    print('PORT STATUS FINGERPRINT')
+    for i in ports:
+        if opened_dict[i] == 'closed':
+            print(i,'closed', 'N/A')
+        else:
+            result = getFingerPrint(target,i)
+            print(i, 'open', result)
         
 
 
