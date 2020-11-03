@@ -127,7 +127,10 @@ def main():
         targets = ipaddress.ip_network(target)
         for host in targets.hosts():
             for j in ports:
-                scan(host, j)
+                # print(str(host))
+                # print(type(host))
+                # exit(0)
+                scan(str(host), j)
             print('PORT STATUS FINGERPRINT FOR:', host)
             for k in ports:
                 if opened_dict[k] == 'closed':
@@ -135,7 +138,7 @@ def main():
                 elif opened_dict[k] == 'filtered':
                     print(k, 'filtered')
                 elif opened_dict[k]== 'open':
-                    result = getFingerPrint(host,k)
+                    result = getFingerPrint(str(host),k)
                     print(k, 'open', result)  
         # print(targets.hosts())
         exit(0)
