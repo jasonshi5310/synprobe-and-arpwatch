@@ -10,6 +10,7 @@ import ipaddress
 opened_dict = {}
 
 def scan(target, deport):
+    # This is not an original function!!!!
     # The following expressions are inspired from scapy reference
     # https://scapy.readthedocs.io/en/latest/usage.html#syn-scans
     # and the youtube video
@@ -46,6 +47,7 @@ def scan(target, deport):
 
 def my_hexdump(x, indent):
     """Build a tcpdump like hexadecimal view
+    This is not an original function!!!!
     This function is altered version from the original hexdump in utils.py
     :param x: a Packet
     :param indent: indentation
@@ -89,9 +91,10 @@ def toList(s):
 
 
 def getFingerPrint(target, deport):
-    fingerprint = 'some unique fingerprint'
+    # This is not an original function!!!
     # The following codes are inspired from youtube video
     # https://www.youtube.com/watch?v=4Y-MR-Hec5Y
+    fingerprint = 'some unique fingerprint'
     for i in range(3):
         packet = IP(dst=target)/TCP(dport=deport, flags='S')
         response = sr1(packet, timeout=1.114514)
@@ -127,9 +130,6 @@ def main():
         targets = ipaddress.ip_network(target)
         for host in targets.hosts():
             for j in ports:
-                # print(str(host))
-                # print(type(host))
-                # exit(0)
                 scan(str(host), j)
             print('PORT STATUS FINGERPRINT FOR:', host)
             for k in ports:
@@ -139,8 +139,7 @@ def main():
                     print(k, 'filtered')
                 elif opened_dict[k]== 'open':
                     result = getFingerPrint(str(host),k)
-                    print(k, 'open', result)  
-        # print(targets.hosts())
+                    print(k, 'open', result)
         exit(0)
     for i in ports:
         scan(target,i)
