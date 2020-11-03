@@ -5,6 +5,7 @@ from scapy.all import *
 import sys
 import time
 import ipaddress
+import socket
 
 
 opened_dict = {}
@@ -43,6 +44,8 @@ def scan(target, deport):
         # print(deport)
     except AttributeError:
         pass
+    except:
+        pass
 
 
 def my_hexdump(x, indent):
@@ -53,7 +56,7 @@ def my_hexdump(x, indent):
     :param indent: indentation
     """
     s = ""
-    x = bytes_encode(x)
+    # x = bytes_encode(x)
     x_len = len(x)
     i = 0
     while i < min(x_len, 1024):
@@ -94,13 +97,19 @@ def getFingerPrint(target, deport):
     # This is not an original function!!!
     # The following codes are inspired from youtube video
     # https://www.youtube.com/watch?v=4Y-MR-Hec5Y
+    # and from python docs
+    # add url later!!!!
     fingerprint = 'some unique fingerprint'
     for i in range(3):
-        packet = IP(dst=target)/TCP(dport=deport, flags='S')
-        response = sr1(packet, timeout=1.114514)
+        # packet = IP(dst=target)/TCP(dport=deport, flags='S')
+        # response = sr1(packet, timeout=1.114514)
+        # url = 'http://' + str(target) + ':' + str(deport)
+        # response = requests.get(url, stream=True,timeout=1.14)
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.connect((target,deport))
         if response != None:
             indent = (4 + 2 + len(str(deport)))*' '
-            return my_hexdump(response, indent)
+            return my_hexdump(response.content, indent)
         else:
             continue
     if fingerprint == 'some unique fingerprint':
