@@ -15,7 +15,7 @@ def scan(target, deport):
     # and the youtube video
     #https://www.youtube.com/watch?v=4Y-MR-Hec5Y
     # and thePacketGeek
-    # 
+    # https://thepacketgeek.com/scapy/building-network-tools/part-10/
     global opened_dict
     try:
         for i in range(3):
