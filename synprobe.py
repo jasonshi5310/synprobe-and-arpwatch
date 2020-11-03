@@ -1,28 +1,45 @@
 # CSE 331 hw3
-# remember to include reference later!!
+# Minqi Shi
 
 from scapy.all import *
 import sys
 import time
+import ipaddress
 
 
 opened_dict = {}
 
 def scan(target, deport):
-    # The following expressions are copyed from scapy reference
+    # The following expressions are inspired from scapy reference
     # https://scapy.readthedocs.io/en/latest/usage.html#syn-scans
     # and the youtube video
     #https://www.youtube.com/watch?v=4Y-MR-Hec5Y
+    # and thePacketGeek
+    # 
     global opened_dict
     try:
-        response = sr1(IP(dst=target)/TCP(dport=deport,flags='S'), timeout=1.14514, verbose=0)
-        if response!= None and response.haslayer(TCP) and response.getlayer(TCP).flags==0x12:
-            # the port is open!
-            opened_dict.setdefault(deport,'open')
-        elif response!= None and response.haslayer(TCP) and response.getlayer(TCP).flags==0x4:
-            opened_dict.setdefault(deport, 'closed')
-        else:
-            opened_dict.setdefault(deport, 'filtered')
+        for i in range(3):
+            response = sr1(IP(dst=target)/TCP(dport=deport,flags='S'), timeout=1.14514, verbose=0)
+            if response == None:
+                continue
+            if response is not None and response.haslayer(TCP):
+                # the port is open!
+                if response.getlayer(TCP).flags==0x12:
+                    opened_dict.setdefault(deport,'open')
+                    break
+                elif response.getlayer(TCP).flags==0x14:
+                    opened_dict.setdefault(deport,'closed')
+                    break
+            # elif response!= None and response.haslayer(TCP) and response.getlayer(TCP).flags==0x14:
+            #     opened_dict.setdefault(deport, 'closed')
+            elif response is not None and response.haslayer(ICMP):
+                if (int(response.getlayer(ICMP).type)==3 and int(response.getlayer(ICMP).code) in [1,2,3,9,10,13]):
+                    opened_dict.setdefault(deport, 'filtered')
+                    break
+            # else:
+            #     opened_dict.setdefault(deport, 'filtered')
+        opened_dict.setdefault(deport, 'filtered')
+        # print(deport)
     except AttributeError:
         pass
 
@@ -31,6 +48,7 @@ def my_hexdump(x, indent):
     """Build a tcpdump like hexadecimal view
     This function is altered version from the original hexdump in utils.py
     :param x: a Packet
+    :param indent: indentation
     """
     s = ""
     x = bytes_encode(x)
@@ -98,9 +116,29 @@ def main():
         if argv[1] != '-p':
             exit(1)
         else:
-            ports = toList(argv[2])
-    target = argv[-1]
+            try:
+                ports = toList(argv[2])
+            except:
+                exit(1)
     conf.verb = 0
+    target = argv[-1]
+    targets = []
+    if target.find('/')!= -1:
+        targets = ipaddress.ip_network(target)
+        for host in targets.hosts():
+            for j in ports:
+                scan(host, j)
+            print('PORT STATUS FINGERPRINT FOR:', host)
+            for k in ports:
+                if opened_dict[k] == 'closed':
+                    print(k,'closed')
+                elif opened_dict[k] == 'filtered':
+                    print(k, 'filtered')
+                elif opened_dict[k]== 'open':
+                    result = getFingerPrint(host,k)
+                    print(k, 'open', result)  
+        # print(targets.hosts())
+        exit(0)
     for i in ports:
         scan(target,i)
     print('PORT STATUS FINGERPRINT')
