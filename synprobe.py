@@ -105,14 +105,13 @@ def getFingerPrint(target, t):
             break
         ack_no = res[TCP].seq+1
         p = IP(dst=target)/TCP(sport=res[TCP].dport ,dport=deport, ack=ack_no, seq=res[TCP].ack, flags="A")
-        filter_string = ''#'src net '+target+' and tcp src port '+str(deport)
+        filter_string = 'src net '+target +' and tcp src port '+str(deport)
         send(p,verbose=0)
         response = sniff(filter=filter_string, timeout=1.114514)
         for j in range(3):
             if len(response)!=0:
                 break
             else:
-                # print('one more try')
                 header = 'GET / HTTP/1.1\r\nHost: '+target+'\r\n\r\n'
                 p = IP(dst=target)/TCP(sport=res[TCP].dport ,dport=deport, ack=ack_no, seq=res[TCP].ack, flags="PA")/header
                 send(p, verbose=0)
