@@ -135,16 +135,16 @@ def main():
     argv = sys.argv
     global opened_dict
     if len(argv) != 2 and len(argv) != 4:
-        exit(1)
-    ports = [80,440,441,442,433]
+        exit(0)
+    ports = [80,440,441,442,443]
     if len(argv) == 4:
         if argv[1] != '-p':
-            exit(1)
+            exit(0)
         else:
             try:
                 ports = toList(argv[2])
             except:
-                exit(1)
+                exit(0)
     conf.verb = 0
     target = argv[-1]
     targets = []

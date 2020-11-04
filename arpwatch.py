@@ -7,26 +7,61 @@
 
 from scapy.all import *
 import sys
+from python_arptable import get_arp_table
 
+
+global cache
+
+def arp_checker(packet):
+    if packet[ARP].op != 2:
+        return
+    elif packet[ARP].op == 2:
+        global cache
+        arp = packet[ARP]
+        ip = arp.psrc
+        hw = arp.hwsrc
+        if cache.get(ip) != None and cache[ip] != hw:
+            msg = ip+" changed from "+cache[ip]+" to "+hw
+            print(msg)
+        else:
+            cache.setdefault(ip, hw)
+            print("A new IP "+ip+" with HW address "+hw+" is added")
+
+
+def nonstop(packet):
+    return 1==0
 
 def main():
+    global cache
     interface = 'eth0'
     argv = sys.argv
+    l = get_if_list()
+    if len(l) == 0:
+        exit(0)
     if len(argv) != 1 and len(argv) != 3:
-        exit(1)
-    if len(argv) == 3:
-        if argv[1] != '-i':
-            exit(1)
+        exit(0)
+    if len(argv) == 1:
+        if interface in l:
+            pass
         else:
+            interface = l[0]
+    if len(argv) == 3:
+        if argv[1] == '-i':
             interface = argv[2]
-    arp = ''
-    sniff(iface=interface, prn=arp, filter='arp')
-    # sniff(prn=arp_monitor_callback, filter='arp', store =0)
-    # This part is copied from stackoverflow
-    # with os.popen('arp -a') as f:
-    #     data = f.read()
-    #     for line in re.findall('([-.0-9]+)\s+([-0-9a-f]{17})\s+(\w+)',data):
-    #         print(line)
+            if l.index(interface) == -1:
+                exit(0)
+        if argv[1] != '-i':
+            exit(0)
+    # Used the following link to get the arp table
+    # https://pypi.org/project/python_arptable/
+    arp_table = get_arp_table()
+    interface_dict = dict()
+    for arp in arp_table:
+        if l.index(arp['Device']) != -1:
+            temp = dict({arp['IP address']:arp['HW address']})
+            interface_dict.setdefault(arp['Device'], temp)
+    cache = interface_dict[interface]
+    sniff(iface=interface, filter='arp', prn=arp_checker, stop_filter=nonstop)
 
 
 if __name__ == "__main__":
