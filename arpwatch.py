@@ -23,6 +23,8 @@ def arp_checker(packet):
         if cache.get(ip) != None and cache[ip] != hw:
             msg = ip+" changed from "+cache[ip]+" to "+hw
             print(msg)
+        elif cache.get(ip) != None and cache[ip] == hw:
+            pass
         else:
             cache.setdefault(ip, hw)
             print("A new IP "+ip+" with HW address "+hw+" is added")
