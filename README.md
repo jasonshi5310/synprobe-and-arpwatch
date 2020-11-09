@@ -1,5 +1,3 @@
-# cse331hw3 README
-
 Task 1:
 Required command:
 # You may need to do these commands before running
